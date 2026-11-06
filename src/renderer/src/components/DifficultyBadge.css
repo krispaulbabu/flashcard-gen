@@ -1,0 +1,37 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 22px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  font: 600 12px/16px var(--font-serif);
+  letter-spacing: 0.02em;
+}
+.badge-easy {
+  background: var(--easy-tint);
+  color: var(--easy);
+}
+.badge-medium {
+  background: var(--medium-tint);
+  color: var(--medium);
+}
+.badge-hard {
+  background: var(--hard-tint);
+  color: var(--hard);
+}
+
+.pips {
+  display: inline-flex;
+  gap: 2px;
+}
+.pips i {
+  width: 4px;
+  height: 10px;
+  border-radius: 1px;
+  background: currentColor;
+  opacity: 0.25;
+}
+.pips i.on {
+  opacity: 1;
+}

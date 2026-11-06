@@ -1,0 +1,39 @@
+.doc {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--paper-raised);
+  --focus-offset: var(--paper-raised);
+}
+
+.doc-badge {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 44px;
+  flex: none;
+  border-radius: 4px;
+  background: var(--paper-sunk);
+  color: var(--espresso);
+  font: 600 9px/12px var(--font-mono);
+  letter-spacing: 0.04em;
+}
+
+.doc-body {
+  flex: 1;
+  min-width: 0;
+}
+.doc-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 600 14px/22px var(--font-serif);
+}
+.doc-meta {
+  font: 400 12px/16px var(--font-serif);
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+}

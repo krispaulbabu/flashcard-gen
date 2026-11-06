@@ -1,0 +1,92 @@
+.card {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  min-height: 230px;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  perspective: 1400px;
+}
+.card:focus-visible {
+  outline: none;
+}
+.card:focus-visible .card-face {
+  box-shadow:
+    0 0 0 2px var(--paper),
+    0 0 0 4px var(--espresso),
+    var(--shadow-card);
+}
+
+.card-inner {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform var(--duration-flip) var(--ease);
+}
+.card.is-flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--paper-raised);
+  box-shadow: var(--shadow-card);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.card-back {
+  transform: rotateY(180deg);
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.card-side {
+  font: 600 11px/14px var(--font-serif);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.card-text {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  font: 400 22px/32px var(--font-serif);
+  color: var(--ink);
+}
+.card-back .card-text {
+  font-size: 18px;
+  line-height: 28px;
+}
+
+.card-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  white-space: nowrap;
+  font: 400 12px/16px var(--font-serif);
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+}
+.card-source {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

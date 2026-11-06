@@ -1,0 +1,27 @@
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.card-list-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+.card-list-head h2 {
+  margin: 0;
+  font: 600 18px/26px var(--font-serif);
+  color: var(--ink);
+}
+.card-list-count {
+  font: 400 12px/16px var(--font-serif);
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-6);
+}

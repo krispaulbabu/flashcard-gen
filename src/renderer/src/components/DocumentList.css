@@ -1,0 +1,70 @@
+.doc-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.doc-panel-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+.doc-panel-head h2 {
+  margin: 0;
+  font: 600 18px/26px var(--font-serif);
+  color: var(--ink);
+}
+.doc-panel-count {
+  font: 400 12px/16px var(--font-serif);
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+}
+
+/* The scroll container: sunk panel, raised rows — tone separates them, per DESIGN.md. */
+.doc-panel-scroll {
+  max-height: min(360px, 45vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--paper-sunk);
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+.doc-panel-hint {
+  margin-left: auto;
+  font: 400 12px/16px var(--font-serif);
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+}
+
+/* While a file is dragged over the window, the panel shows it's a drop target. */
+.doc-panel-scroll {
+  transition:
+    border-color var(--duration-base) var(--ease),
+    background var(--duration-base) var(--ease);
+}
+.doc-panel-scroll.is-drop-target {
+  border: 1.5px dashed var(--espresso);
+}
+.doc-panel-scroll.is-over {
+  border-style: solid;
+  background: var(--latte);
+}
+
+.doc-panel-scroll:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--paper),
+    0 0 0 4px var(--espresso);
+}
+
+.doc-panel-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

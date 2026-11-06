@@ -1,0 +1,16 @@
+.welcome {
+  max-width: 560px;
+  margin: 0 auto;
+  text-align: center;
+}
+.welcome h1 {
+  margin: 0 0 var(--space-3);
+  font: 600 40px/46px var(--font-serif);
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.welcome p {
+  margin: 0;
+  font: 400 16px/26px var(--font-serif);
+  color: var(--ink-muted);
+}

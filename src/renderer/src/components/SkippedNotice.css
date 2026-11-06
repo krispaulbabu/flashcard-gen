@@ -1,0 +1,12 @@
+.skipped-notice {
+  margin: var(--space-3) 0 0;
+  font: 400 13px/20px var(--font-serif);
+  color: var(--danger);
+}
+.skipped-notice-center {
+  text-align: center;
+}
+.skipped-notice-start {
+  margin-top: 0;
+  text-align: left;
+}

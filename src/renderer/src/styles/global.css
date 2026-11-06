@@ -40,6 +40,72 @@ button {
   background: var(--paper);
 }
 
+/* Centred layouts: first launch, and a project with no documents yet. */
+.main-center {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-8);
+  min-height: calc(100% - 44px);
+  padding: 0 var(--space-8) var(--space-16);
+}
+.main-center .page-head {
+  text-align: center;
+}
+
+/* A project with documents. */
+.main-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-4) var(--space-12) var(--space-12);
+}
+/* The header spans the panel (actions sit in the top-right corner); content keeps a readable width. */
+.main-page > :not(.page-head) {
+  width: 100%;
+  max-width: 760px;
+}
+.main-page .dropzone-wrap {
+  max-width: none;
+}
+
+.page-head {
+  display: flex;
+  flex-wrap: wrap; /* on narrow windows the actions drop below the title instead of squeezing it */
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+.main-center .page-head {
+  justify-content: center;
+}
+.page-head-text {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+.page-head-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex: none;
+}
+.page-head h1 {
+  margin: 0;
+  font: 600 26px/32px var(--font-serif);
+  color: var(--ink);
+}
+.page-head p {
+  margin: 4px 0 0;
+  font: 400 12px/16px var(--font-serif);
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+}
+
+.doc-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
 /* With the hidden-inset title bar, the top strip of the main panel drags the window too. */
 .main-drag {
   position: sticky;
