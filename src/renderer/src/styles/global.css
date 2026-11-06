@@ -20,8 +20,32 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-.app {
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* App shell: fixed sidebar on the left, main panel fills the rest. */
+.shell {
+  display: flex;
   height: 100%;
+  background: var(--paper);
+}
+
+.main {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  background: var(--paper);
+}
+
+/* With the hidden-inset title bar, the top strip of the main panel drags the window too. */
+.main-drag {
+  position: sticky;
+  top: 0;
+  height: 44px;
+  -webkit-app-region: drag;
 }
 
 @media (prefers-reduced-motion: reduce) {
