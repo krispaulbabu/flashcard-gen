@@ -1,5 +1,25 @@
 import { join } from 'node:path'
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import { callSidecar, startSidecar, stopSidecar, type Method } from './sidecar'
+
+// The renderer may only reach these backend routes.
+const ID = '[0-9a-f-]{36}'
+const ROUTES: [Method, RegExp][] = [
+  ['GET', /^\/projects$/],
+  ['POST', /^\/projects$/],
+  ['PATCH', new RegExp(`^/projects/${ID}$`)],
+  ['DELETE', new RegExp(`^/projects/${ID}$`)],
+  ['POST', new RegExp(`^/projects/${ID}/documents$`)],
+  ['POST', new RegExp(`^/projects/${ID}/cards/generate$`)],
+  ['DELETE', new RegExp(`^/documents/${ID}$`)],
+  ['PATCH', new RegExp(`^/cards/${ID}$`)],
+  ['GET', /^\/settings$/],
+  ['PUT', /^\/settings$/]
+]
+
+function isAllowed(method: Method, path: string): boolean {
+  return ROUTES.some(([m, re]) => m === method && re.test(path))
+}
 
 function createWindow(): void {
   const win = new BrowserWindow({
@@ -36,12 +56,28 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  // Start the backend early so the first "Generate cards" doesn't wait for Python to boot.
+  startSidecar()
+
+  // Returns { ok, data } / { ok, error } rather than throwing: Electron mangles thrown
+  // errors into "Error invoking remote method…", which isn't something to show a user.
+  ipcMain.handle('backend:request', async (_event, method: Method, path: string, body?: unknown) => {
+    if (!isAllowed(method, path)) return { ok: false, error: `Not allowed: ${method} ${path}` }
+    try {
+      return { ok: true, data: await callSidecar(method, path, body) }
+    } catch (err) {
+      return { ok: false, error: (err as Error).message }
+    }
+  })
+
   createWindow()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
+
+app.on('will-quit', stopSidecar)
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()

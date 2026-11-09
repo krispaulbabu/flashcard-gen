@@ -1,0 +1,128 @@
+/* Covers the window except for a small margin; what's behind is blurred, not just dimmed.
+   The top margin matches the 44px title-bar strip so the panel clears the traffic lights. */
+.study-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  padding: 44px var(--space-6) var(--space-6);
+  background: rgba(46, 34, 25, 0.18);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  animation: study-fade var(--duration-base) var(--ease);
+}
+[data-theme='dark'] .study-scrim {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.study {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--paper-raised);
+  box-shadow: var(--shadow-modal);
+  --focus-offset: var(--paper-raised);
+  animation: study-pop var(--duration-base) var(--ease);
+}
+
+.study-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-6) var(--space-6) var(--space-4) var(--space-8);
+  border-bottom: 1px solid var(--line);
+}
+.study-head h2 {
+  margin: 0;
+  font: 600 26px/32px var(--font-serif);
+  color: var(--ink);
+}
+.study-head p {
+  margin: var(--space-1) 0 0;
+  font: 400 13px/20px var(--font-serif);
+  color: var(--ink-muted);
+}
+
+.study-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--space-8);
+  overflow: auto;
+  container-type: size; /* lets the card size itself to the space left */
+}
+
+.study-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.study-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+}
+
+.study-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* As wide as possible up to 640px, leaving room for the side arrows and the button below (cards are 3:2). */
+.study-card {
+  width: min(
+    640px,
+    100cqw - 2 * (var(--study-arrow) + var(--space-4)),
+    (100cqh - 36px - var(--space-6)) * 1.5
+  );
+}
+
+.study {
+  --study-arrow: 44px;
+}
+.study-arrow {
+  width: var(--study-arrow);
+  height: var(--study-arrow);
+  flex: none;
+  border: 1px solid var(--line);
+  background: var(--paper-raised);
+}
+.study-arrow:hover:not(:disabled) {
+  border-color: var(--line-strong);
+}
+.study-arrow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.study-card .card {
+  min-height: 0;
+}
+
+@keyframes study-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes study-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .study-scrim,
+  .study {
+    animation: none;
+  }
+}

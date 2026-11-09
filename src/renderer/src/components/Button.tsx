@@ -22,7 +22,9 @@ export function Button({
   type = 'button',
   ...rest
 }: ButtonProps): React.JSX.Element {
-  const classes = ['btn', `btn-${variant}`, size === 'sm' && 'btn-sm', block && 'btn-block', className]
+  // No text: a square button. Give it an aria-label (and title) so it still has a name.
+  const iconOnly = icon && children == null
+  const classes = ['btn', `btn-${variant}`, size === 'sm' && 'btn-sm', block && 'btn-block', iconOnly && 'btn-icon', className]
   return (
     <button type={type} className={classes.filter(Boolean).join(' ')} {...rest}>
       {icon && <Icon name={icon} />}

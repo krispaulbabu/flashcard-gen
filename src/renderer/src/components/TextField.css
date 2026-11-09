@@ -1,0 +1,91 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.field-label {
+  font: 600 13px/18px var(--font-serif);
+  color: var(--ink);
+}
+
+.field-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 3px 0 var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--paper-raised);
+  --focus-offset: var(--paper-raised);
+  transition:
+    box-shadow var(--duration-fast) var(--ease),
+    border-color var(--duration-fast) var(--ease);
+}
+.field-box:focus-within {
+  border-color: var(--espresso);
+  box-shadow:
+    0 0 0 2px var(--paper-raised),
+    0 0 0 4px var(--espresso);
+}
+.field-box .icon-btn {
+  width: 30px;
+  height: 30px;
+}
+
+.field-box input,
+.field-box select {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: 400 15px/22px var(--font-serif);
+}
+.field-box input::placeholder {
+  color: var(--ink-muted);
+}
+.field-mono input {
+  font: 400 13px/20px var(--font-mono);
+}
+
+/* Select: native control without the OS chrome, plus our own chevron. */
+.field-box-select {
+  padding-right: var(--space-8);
+}
+.field-box select {
+  appearance: none;
+  cursor: pointer;
+}
+.field-box-select::after {
+  content: '';
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-right: 1.6px solid var(--ink-muted);
+  border-bottom: 1.6px solid var(--ink-muted);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+
+.field-hint {
+  font: 400 12px/16px var(--font-serif);
+  letter-spacing: 0.02em;
+  color: var(--ink-muted);
+}
+.field-error .field-box {
+  border-color: var(--danger);
+}
+.field-error .field-hint {
+  color: var(--danger);
+}
+.field-ok .field-hint {
+  color: var(--success);
+}

@@ -1,10 +1,33 @@
-import { contextBridge, webUtils } from 'electron'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
 
-// The renderer's only door to the main process. Add IPC methods here as features land.
+import type { Difficulty, DifficultySetting, GenerateResponse, Result, StoredDocument, StoredProject } from '../shared/types'
+
+type Method = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
+const request = <T>(method: Method, path: string, body?: unknown): Promise<Result<T>> =>
+  ipcRenderer.invoke('backend:request', method, path, body)
+
 const api = {
   platform: process.platform,
-  /** Absolute path of a File from a file input or drop (File.path was removed in Electron 32). */
-  getPathForFile: (file: File): string => webUtils.getPathForFile(file)
+  getPathForFile: (file: File): string => webUtils.getPathForFile(file),
+
+  listProjects: () => request<StoredProject[]>('GET', '/projects'),
+  createProject: (name: string) => request<StoredProject>('POST', '/projects', { name }),
+  renameProject: (id: string, name: string) => request<{ ok: true }>('PATCH', `/projects/${id}`, { name }),
+  deleteProject: (id: string) => request<{ ok: true }>('DELETE', `/projects/${id}`),
+
+  /** The backend copies each file into the app's data folder. */
+  addDocuments: (projectId: string, files: { path: string; name: string }[]) =>
+    request<{ documents: StoredDocument[]; failed: string[] }>('POST', `/projects/${projectId}/documents`, { files }),
+  deleteDocument: (id: string) => request<{ ok: true }>('DELETE', `/documents/${id}`),
+
+  generateCards: (projectId: string, req: { difficulty: DifficultySetting; cards_per_document: number }) =>
+    request<GenerateResponse>('POST', `/projects/${projectId}/cards/generate`, req),
+
+  setCardDifficulty: (cardId: string, difficulty: Difficulty) =>
+    request<{ ok: true }>('PATCH', `/cards/${cardId}`, { difficulty }),
+
+  getSettings: () => request<Record<string, unknown>>('GET', '/settings'),
+  saveSettings: (settings: unknown) => request<{ ok: true }>('PUT', '/settings', settings)
 }
 
 contextBridge.exposeInMainWorld('api', api)

@@ -1,0 +1,61 @@
+.seg {
+  display: inline-flex;
+  flex: none;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius-sm) + 3px);
+  background: var(--paper-sunk);
+}
+
+.seg button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-muted);
+  font: 600 13px/18px var(--font-serif);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease),
+    color var(--duration-fast) var(--ease);
+}
+.seg button:hover {
+  color: var(--ink);
+}
+.seg button:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--espresso);
+}
+.seg button[aria-checked='true'] {
+  background: var(--paper-raised);
+  color: var(--ink);
+  box-shadow: var(--shadow-card);
+}
+.seg button[aria-checked='true']:focus-visible {
+  box-shadow:
+    inset 0 0 0 2px var(--espresso),
+    var(--shadow-card);
+}
+
+.seg button[aria-checked='true'].seg-tone-easy {
+  background: var(--easy-tint);
+  color: var(--easy);
+}
+.seg button[aria-checked='true'].seg-tone-medium {
+  background: var(--medium-tint);
+  color: var(--medium);
+}
+.seg button[aria-checked='true'].seg-tone-hard {
+  background: var(--hard-tint);
+  color: var(--hard);
+}
+
+/* Pips reuse DifficultyBadge's styles; only the size differs here. */
+.seg .pips i {
+  height: 9px;
+}

@@ -5,3 +5,6 @@ dist
 .DS_Store
 .env
 *.tsbuildinfo
+backend/.venv
+__pycache__/
+.pytest_cache/

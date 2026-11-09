@@ -37,6 +37,13 @@
 .btn-block {
   width: 100%;
 }
+.btn-icon {
+  width: 36px;
+  padding: 0;
+}
+.btn-sm.btn-icon {
+  width: 30px;
+}
 
 .btn-primary {
   background: var(--espresso);

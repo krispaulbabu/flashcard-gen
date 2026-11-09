@@ -5,8 +5,6 @@ export interface ProjectDocument {
   id: string
   name: string
   size: number
-  /** Absolute path on disk (empty in a plain browser, where it isn't available). */
-  path: string
 }
 
 function formatSize(bytes: number): string {
@@ -29,7 +27,7 @@ export function DocumentItem({ doc, onRemove }: DocumentItemProps): React.JSX.El
         {ext}
       </span>
       <div className="doc-body">
-        <div className="doc-name" title={doc.path || doc.name}>
+        <div className="doc-name" title={doc.name}>
           {doc.name}
         </div>
         <div className="doc-meta">{formatSize(doc.size)}</div>

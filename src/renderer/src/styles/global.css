@@ -122,3 +122,16 @@ button {
     transition: none !important;
   }
 }
+
+/* Electron's window-drag strips swallow clicks even under overlays; switch them off while a modal is open. */
+.modal-open .main-drag,
+.modal-open .sidebar-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* "Opening your projects…" while the backend starts. */
+.main-status {
+  margin: 0;
+  font: 400 15px/24px var(--font-serif);
+  color: var(--ink-muted);
+}
