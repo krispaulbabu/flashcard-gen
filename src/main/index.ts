@@ -1,5 +1,5 @@
 import { join } from 'node:path'
-import { app, BrowserWindow, ipcMain, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, nativeTheme, shell } from 'electron'
 import { callSidecar, startSidecar, stopSidecar, type Method } from './sidecar'
 import { clearKey, keyStatus, readKey, saveKey } from './apiKey'
 
@@ -90,6 +90,14 @@ app.whenReady().then(() => {
   // Aborting drops the connection; the backend sees that and stops (and saves nothing).
   ipcMain.handle('cards:cancel', (_event, projectId: string) => {
     generations.get(String(projectId))?.abort()
+  })
+
+  ipcMain.handle('theme:set', (_event, theme: unknown) => {
+    if (theme !== 'light' && theme !== 'dark') return
+    nativeTheme.themeSource = theme
+    // `paper` for each theme, so resizing or reloading never flashes the wrong colour.
+    const bg = theme === 'dark' ? '#1d1713' : '#faf6f0'
+    for (const win of BrowserWindow.getAllWindows()) win.setBackgroundColor(bg)
   })
 
   ipcMain.handle('key:status', () => keyStatus())

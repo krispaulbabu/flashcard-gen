@@ -102,15 +102,14 @@ function Row({ title, description, children }: { title: string; description: str
 function AppearancePane({ settings, set }: { settings: Settings; set: Setter }): React.JSX.Element {
   return (
     <>
-      <Row title="Theme" description="Latte is light, Roast is dark. System follows your Mac.">
+      <Row title="Theme" description="Latte is light, Roast is dark.">
         <SegmentedControl
           label="Theme"
           value={settings.theme}
           onChange={(v) => set('theme', v)}
           options={[
             { value: 'light', label: 'Latte' },
-            { value: 'dark', label: 'Roast' },
-            { value: 'system', label: 'System' }
+            { value: 'dark', label: 'Roast' }
           ]}
         />
       </Row>

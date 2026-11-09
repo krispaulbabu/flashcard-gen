@@ -18,7 +18,10 @@
 .study {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  /* 80% of the space inside the margins, centred: 20% smaller each way than filling it. */
+  width: 80%;
+  height: 80%;
+  margin: auto;
   min-width: 0;
   overflow: hidden;
   border: 1px solid var(--line);
@@ -79,10 +82,11 @@
   gap: var(--space-4);
 }
 
-/* As wide as possible up to 640px, leaving room for the side arrows and the button below (cards are 3:2). */
+/* Up to 512px wide (80% of the original 640), smaller if the panel is short, leaving room for
+   the side arrows and the controls below. Cards are 3:2. */
 .study-card {
   width: min(
-    640px,
+    512px,
     100cqw - 2 * (var(--study-arrow) + var(--space-4)),
     (100cqh - 36px - var(--space-6)) * 1.5
   );

@@ -1,9 +1,9 @@
 import type { Difficulty } from '../components/DifficultyBadge'
 
-// Saved to the backend database. The OpenRouter key is not part of settings: the main process
+// Saved to the backend database. Theme is applied (lib/theme.ts); font and text size aren't yet. The OpenRouter key is not part of settings: the main process
 // keeps it encrypted (see src/main/apiKey.ts).
 
-export type ThemeSetting = 'light' | 'dark' | 'system'
+export type ThemeSetting = 'light' | 'dark'
 export type TextSize = 'sm' | 'md' | 'lg'
 /** 'random' gives each card a random level, mixing all three in one batch. */
 export type DifficultySetting = Difficulty | 'random'

@@ -32,6 +32,9 @@ const api = {
   generateCards: (projectId: string, req: { difficulty: DifficultySetting; cards_per_document: number; model?: string }) =>
     request<GenerateResponse>('POST', `/projects/${projectId}/cards/generate`, req),
 
+  /** Native window theme (background, scrollbars, form controls). */
+  setTheme: (theme: 'light' | 'dark'): Promise<void> => ipcRenderer.invoke('theme:set', theme),
+
   cancelGenerate: (projectId: string): Promise<void> => ipcRenderer.invoke('cards:cancel', projectId),
 
   setCardDifficulty: (cardId: string, difficulty: Difficulty) =>

@@ -28,7 +28,7 @@ This file is the in-repo summary. When the two disagree, update both; the artifa
 
 ## Color tokens
 
-Set `data-theme="light" | "dark"` on `<html>`. Settings also offers "System" (follow `prefers-color-scheme`).
+Set `data-theme="light" | "dark"` on `<html>`. Settings offers Latte and Roast only; there is no "follow the system" option.
 
 | Token | Latte (light) | Roast (dark) | Use |
 |---|---|---|---|
@@ -96,7 +96,7 @@ The text-size setting scales `card-face` and `body` only.
   - First launch (no projects): `Welcome` above a centred `UploadDropzone` (giant 112px espresso plus with a crema ring). Welcome never shows again once a project exists.
   - Project page: title + counts and actions on one row; then Documents, Summary, Cards sections separated by `space-12`. Gutters `space-8`/`space-12`; summary column max 680px; card grid `repeat(auto-fill, minmax(300px, 1fr))`, gap `space-6`.
 - **Settings**: small modal (max 680 × 460) with a 184px nav rail — Appearance, AI provider, Card generation, Export. Changes apply immediately; no Save button. Closes on Esc, ✕, or scrim click.
-- **Study panel**: opened by the square play button left of Generate cards (disabled with no cards). Fills the window minus a margin: 44px on top (clears the traffic lights), `space-6` elsewhere; `radius-lg`, `paper-raised`, `shadow-modal`; the scrim blurs the app behind it (10px) with a light tint. Header shows project name (`title`) and card count; closes on Esc, ✕, or scrim click. Body: one `Flashcard` (max 640px, sized to fit) between 44px round arrow buttons that step in project order (← → keys too, wrapping), with an Easy / Medium / Hard `SegmentedControl` (shows and reassigns the card's level, saved immediately) and a secondary "Random card" button below. Opens on a random card; every move shows the question side.
+- **Study panel**: opened by the square play button right of Generate cards (disabled with no cards). 80% of the window's width and height inside a margin of 44px on top (clears the traffic lights) and `space-6` elsewhere, centred; `radius-lg`, `paper-raised`, `shadow-modal`; the scrim blurs the app behind it (10px) with a light tint. Header shows project name (`title`) and card count; closes on Esc, ✕, or scrim click. Body: one `Flashcard` (max 512px wide, smaller if the panel is short) between 44px round arrow buttons that step in project order (← → keys too, wrapping), with an Easy / Medium / Hard `SegmentedControl` (shows and reassigns the card's level, saved immediately) and a secondary "Random card" button below. Opens on a random card; every move shows the question side.
 
 ## Components
 

@@ -15,6 +15,7 @@ import type { Difficulty } from './components/DifficultyBadge'
 import { SettingsModal } from './components/SettingsModal'
 import { StudyPanel } from './components/StudyPanel'
 import { DEFAULT_SETTINGS, type ProviderConfig, type Settings } from './lib/settings'
+import { applyTheme, normalizeTheme } from './lib/theme'
 
 interface AppProject extends Project {
   documents: ProjectDocument[]
@@ -44,6 +45,7 @@ function mergeSettings(saved: Record<string, unknown>): Settings {
     return { ...d, model: typeof s?.model === 'string' && s.model.trim() ? s.model : d.model }
   })
   merged.defaultProviderId = DEFAULT_SETTINGS.defaultProviderId
+  merged.theme = saved.theme === undefined ? DEFAULT_SETTINGS.theme : normalizeTheme(saved.theme)
   return merged
 }
 
@@ -80,6 +82,11 @@ function App(): React.JSX.Element {
       setLoad({ kind: 'ready' })
     })
   }, [])
+
+  // Latte / Roast. Waits for saved settings so the default doesn't flash over them.
+  useEffect(() => {
+    if (load.kind === 'ready') applyTheme(settings.theme)
+  }, [settings.theme, load.kind])
 
   // Save settings shortly after the last change (typing in a field shouldn't write every keystroke).
   useEffect(() => {
@@ -265,13 +272,6 @@ function App(): React.JSX.Element {
                   <AddDocumentsButton onFiles={handleFiles} />
                   {/* Not wired up yet: Anki export comes later. */}
                   <Button icon="download">Export to Anki</Button>
-                  <Button
-                    icon="play"
-                    aria-label="Study cards"
-                    title={active.cards.length === 0 ? 'Generate cards to study them' : 'Study cards'}
-                    disabled={active.cards.length === 0}
-                    onClick={() => setStudyOpen(true)}
-                  />
                   {active.generating && (
                     <Button onClick={() => window.api.cancelGenerate(active.id)}>Cancel</Button>
                   )}
@@ -284,6 +284,13 @@ function App(): React.JSX.Element {
                   >
                     {active.generating ? 'Generating…' : 'Generate cards'}
                   </Button>
+                  <Button
+                    icon="play"
+                    aria-label="Study cards"
+                    title={active.cards.length === 0 ? 'Generate cards to study them' : 'Study cards'}
+                    disabled={active.cards.length === 0}
+                    onClick={() => setStudyOpen(true)}
+                  />
                 </>
               }
             />

@@ -4,6 +4,9 @@ import '@fontsource-variable/literata'
 import './styles/tokens.css'
 import './styles/global.css'
 import App from './App'
+import { applyRememberedTheme } from './lib/theme'
+
+applyRememberedTheme()
 
 // A file dropped outside the drop-zone would make Electron navigate away to it. Swallow those drops.
 window.addEventListener('dragover', (e) => e.preventDefault())
