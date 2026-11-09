@@ -1,17 +1,18 @@
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Button, IconButton } from './Button'
 import { Icon, type IconName } from './Icon'
 import { SegmentedControl } from './SegmentedControl'
 import { TextField } from './TextField'
 import { ANKI_NOTE_TYPES, FONTS, type ProviderConfig, type Settings } from '../lib/settings'
 import { useModal } from '../hooks/useModal'
+import type { KeyStatus } from '../../../shared/types'
 import './SettingsModal.css'
 
 type TabId = 'appearance' | 'providers' | 'generation' | 'export'
 
 const TABS: { id: TabId; label: string; icon: IconName }[] = [
   { id: 'appearance', label: 'Appearance', icon: 'palette' },
-  { id: 'providers', label: 'AI providers', icon: 'key' },
+  { id: 'providers', label: 'AI provider', icon: 'key' },
   { id: 'generation', label: 'Card generation', icon: 'sparkle' },
   { id: 'export', label: 'Export to Anki', icon: 'download' }
 ]
@@ -142,61 +143,31 @@ function ProvidersPane({ settings, onChange }: { settings: Settings; onChange: (
   function update(id: string, patch: Partial<ProviderConfig>): void {
     onChange({ ...settings, providers: settings.providers.map((p) => (p.id === id ? { ...p, ...patch } : p)) })
   }
+  // OpenRouter only for now.
+  const p = settings.providers[0]
 
   return (
     <>
       <p className="settings-intro">
-        Crema sends your documents to the default provider to write summaries and cards. Keys stay on this Mac.
+        Crema sends your documents to OpenRouter, which passes them to the model you choose, to write cards.
+        Your key is stored encrypted on this Mac.
       </p>
-      {settings.providers.map((p) => {
-        const isDefault = p.id === settings.defaultProviderId
-        return (
-          <section key={p.id} className="provider" aria-label={p.name}>
-            <div className="provider-head">
-              <b>{p.name}</b>
-              {isDefault ? (
-                <span className="provider-default">
-                  <Icon name="check" size={14} />
-                  Default
-                </span>
-              ) : (
-                <Button variant="quiet" size="sm" onClick={() => onChange({ ...settings, defaultProviderId: p.id })}>
-                  Make default
-                </Button>
-              )}
-            </div>
-            <div className="settings-grid">
-              {p.kind === 'local' ? (
-                <TextField
-                  label="Server URL"
-                  mono
-                  value={p.baseUrl}
-                  onChange={(e) => update(p.id, { baseUrl: e.target.value })}
-                />
-              ) : (
-                <TextField
-                  label="API key"
-                  type="password"
-                  mono
-                  placeholder="Paste your key"
-                  value={p.apiKey}
-                  onChange={(e) => update(p.id, { apiKey: e.target.value })}
-                />
-              )}
-              <TextField
-                label="Model"
-                mono
-                placeholder={p.modelPlaceholder}
-                value={p.model}
-                onChange={(e) => update(p.id, { model: e.target.value })}
-              />
-            </div>
-          </section>
-        )
-      })}
-      <div>
-        <Button icon="plus">Add provider</Button>
-      </div>
+      <section className="provider" aria-label={p.name}>
+        <div className="provider-head">
+          <b>{p.name}</b>
+        </div>
+        <div className="settings-grid">
+          <ApiKeyField />
+          <TextField
+            label="Model"
+            mono
+            placeholder={p.modelPlaceholder}
+            value={p.model}
+            onChange={(e) => update(p.id, { model: e.target.value })}
+            hint="Any OpenRouter model id that supports structured outputs."
+          />
+        </div>
+      </section>
     </>
   )
 }
@@ -261,5 +232,69 @@ function ExportPane({ settings, set }: { settings: Settings; set: Setter }): Rea
         />
       </Row>
     </>
+  )
+}
+
+/**
+ * The OpenRouter key. Saved (and checked with OpenRouter) on Enter or when the field loses focus.
+ * The saved key is never shown again, only its last four characters.
+ */
+function ApiKeyField(): React.JSX.Element {
+  const [status, setStatus] = useState<KeyStatus>()
+  const [draft, setDraft] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [result, setResult] = useState<{ error?: string; success?: string }>({})
+
+  useEffect(() => {
+    window.api?.openRouterKey.status().then(setStatus)
+  }, [])
+
+  async function save(): Promise<void> {
+    if (!draft.trim() || busy) return
+    setBusy(true)
+    const verdict = await window.api.openRouterKey.save(draft)
+    setBusy(false)
+    if (verdict.ok) {
+      setStatus(verdict.status)
+      setDraft('')
+      setResult({ success: verdict.note ?? 'Key verified' })
+    } else {
+      setResult({ error: verdict.error })
+    }
+  }
+
+  async function remove(): Promise<void> {
+    setStatus(await window.api.openRouterKey.clear())
+    setResult({})
+  }
+
+  const placeholder = status?.saved ? `Saved key ending in ${status.last4}` : 'sk-or-…'
+  return (
+    <div className="api-key">
+      <TextField
+        label="API key"
+        type="password"
+        mono
+        placeholder={busy ? 'Checking…' : placeholder}
+        value={draft}
+        disabled={busy}
+        onChange={(e) => {
+          setDraft(e.target.value)
+          setResult({})
+        }}
+        onBlur={save}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') save()
+        }}
+        error={result.error}
+        success={result.success}
+        hint={status?.saved ? 'Paste a new key to replace it.' : 'From openrouter.ai/keys. Saved when you press Enter.'}
+      />
+      {status?.saved && (
+        <Button variant="quiet" size="sm" onClick={remove}>
+          Remove key
+        </Button>
+      )}
+    </div>
   )
 }

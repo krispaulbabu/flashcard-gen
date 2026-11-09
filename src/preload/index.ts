@@ -1,6 +1,15 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron'
 
-import type { Difficulty, DifficultySetting, GenerateResponse, Result, StoredDocument, StoredProject } from '../shared/types'
+import type {
+  Difficulty,
+  DifficultySetting,
+  GenerateResponse,
+  KeyStatus,
+  KeyVerdict,
+  Result,
+  StoredDocument,
+  StoredProject
+} from '../shared/types'
 
 type Method = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
 const request = <T>(method: Method, path: string, body?: unknown): Promise<Result<T>> =>
@@ -20,11 +29,18 @@ const api = {
     request<{ documents: StoredDocument[]; failed: string[] }>('POST', `/projects/${projectId}/documents`, { files }),
   deleteDocument: (id: string) => request<{ ok: true }>('DELETE', `/documents/${id}`),
 
-  generateCards: (projectId: string, req: { difficulty: DifficultySetting; cards_per_document: number }) =>
+  generateCards: (projectId: string, req: { difficulty: DifficultySetting; cards_per_document: number; model?: string }) =>
     request<GenerateResponse>('POST', `/projects/${projectId}/cards/generate`, req),
 
   setCardDifficulty: (cardId: string, difficulty: Difficulty) =>
     request<{ ok: true }>('PATCH', `/cards/${cardId}`, { difficulty }),
+
+  /** OpenRouter key: stored encrypted by the main process. The full key never comes back here. */
+  openRouterKey: {
+    status: (): Promise<KeyStatus> => ipcRenderer.invoke('key:status'),
+    save: (key: string): Promise<KeyVerdict> => ipcRenderer.invoke('key:save', key),
+    clear: (): Promise<KeyStatus> => ipcRenderer.invoke('key:clear')
+  },
 
   getSettings: () => request<Record<string, unknown>>('GET', '/settings'),
   saveSettings: (settings: unknown) => request<{ ok: true }>('PUT', '/settings', settings)

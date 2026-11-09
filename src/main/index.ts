@@ -1,6 +1,7 @@
 import { join } from 'node:path'
 import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import { callSidecar, startSidecar, stopSidecar, type Method } from './sidecar'
+import { clearKey, keyStatus, readKey, saveKey } from './apiKey'
 
 // The renderer may only reach these backend routes.
 const ID = '[0-9a-f-]{36}'
@@ -63,12 +64,22 @@ app.whenReady().then(() => {
   // errors into "Error invoking remote method…", which isn't something to show a user.
   ipcMain.handle('backend:request', async (_event, method: Method, path: string, body?: unknown) => {
     if (!isAllowed(method, path)) return { ok: false, error: `Not allowed: ${method} ${path}` }
+    // Only card generation needs the OpenRouter key; it's added here so the renderer never holds it.
+    const headers: Record<string, string> = {}
+    if (/\/cards\/generate$/.test(path)) {
+      const key = readKey()
+      if (key) headers['X-OpenRouter-Key'] = key
+    }
     try {
-      return { ok: true, data: await callSidecar(method, path, body) }
+      return { ok: true, data: await callSidecar(method, path, body, headers) }
     } catch (err) {
       return { ok: false, error: (err as Error).message }
     }
   })
+
+  ipcMain.handle('key:status', () => keyStatus())
+  ipcMain.handle('key:save', (_event, key: string) => saveKey(String(key ?? '')))
+  ipcMain.handle('key:clear', () => clearKey())
 
   createWindow()
 

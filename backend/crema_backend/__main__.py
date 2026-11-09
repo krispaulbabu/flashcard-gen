@@ -12,11 +12,10 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 import uvicorn
-from dotenv import load_dotenv
 from fastapi import Depends, FastAPI, Header, HTTPException
 
 from .generate import generate
-from .llm import LLMError, model_name
+from .llm import LLMError
 from .models import (
     AddDocumentsRequest,
     AddDocumentsResponse,
@@ -28,9 +27,6 @@ from .models import (
     StoredProject,
 )
 from .store import NotFound, Store
-
-# .env lives in the project root (one level above backend/). Real environment variables win.
-load_dotenv(Path(__file__).resolve().parents[2] / ".env", override=False)
 
 ACCEPTED_EXTENSIONS = {".pdf", ".docx", ".md", ".txt", ".epub"}
 
@@ -69,7 +65,7 @@ def not_found(what: str) -> HTTPException:
 
 @app.get("/health")
 def health() -> dict:
-    return {"ok": True, "model": model_name(), "has_key": bool(os.environ.get("OPENROUTER_API_KEY"))}
+    return {"ok": True}
 
 
 auth = [Depends(require_token)]
@@ -124,7 +120,15 @@ def delete_document(doc_id: str) -> dict:
 
 
 @app.post("/projects/{project_id}/cards/generate", response_model=GenerateResponse, dependencies=auth)
-async def generate_cards(project_id: str, req: GenerateRequest) -> GenerateResponse:
+async def generate_cards(
+    project_id: str,
+    req: GenerateRequest,
+    # Added by Electron's main process from the key saved in Settings (never stored here).
+    x_openrouter_key: str = Header(default=""),
+) -> GenerateResponse:
+    api_key = x_openrouter_key.strip()
+    if not api_key:
+        raise HTTPException(status_code=400, detail="Add your OpenRouter API key in Settings → AI provider.")
     try:
         rows = store().documents_for_generation(project_id)
     except NotFound:
@@ -133,7 +137,7 @@ async def generate_cards(project_id: str, req: GenerateRequest) -> GenerateRespo
         raise HTTPException(status_code=400, detail="Add a document before generating cards.")
     docs = [DocumentRef(id=r["id"], name=r["name"], path=r["stored_path"]) for r in rows]
     try:
-        result = await generate(docs, req)
+        result = await generate(docs, req, api_key)
     except LLMError as e:
         raise HTTPException(status_code=502, detail=str(e)) from e
     store().add_cards(project_id, result.cards)

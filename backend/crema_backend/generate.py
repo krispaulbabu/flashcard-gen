@@ -24,11 +24,12 @@ def _norm(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", text.lower()).strip()
 
 
-async def generate(documents: list[DocumentRef], req: GenerateRequest) -> GenerateResponse:
+async def generate(documents: list[DocumentRef], req: GenerateRequest, api_key: str) -> GenerateResponse:
     cards: list[Card] = []
     errors: list[DocumentError] = []
     seen: set[str] = set()
     limit = asyncio.Semaphore(MAX_PARALLEL_REQUESTS)
+    model = model_name(req.model)
 
     async with httpx.AsyncClient(timeout=httpx.Timeout(180.0, connect=10.0)) as client:
         for doc in documents:
@@ -58,6 +59,8 @@ async def generate(documents: list[DocumentRef], req: GenerateRequest) -> Genera
                         mix=mix,
                         part=i + 1,
                         total_parts=len(chunks),
+                        model=model,
+                        api_key=api_key,
                     )
                 if req.difficulty == "random":
                     random.shuffle(cards)  # models tend to group by level; interleave them
@@ -91,4 +94,4 @@ async def generate(documents: list[DocumentRef], req: GenerateRequest) -> Genera
 
     # One error per document is enough for the UI.
     unique_errors = list({e.document_id: e for e in errors}.values())
-    return GenerateResponse(cards=cards, errors=unique_errors, model=model_name())
+    return GenerateResponse(cards=cards, errors=unique_errors, model=model)

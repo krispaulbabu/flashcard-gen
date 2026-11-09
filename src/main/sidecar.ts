@@ -127,7 +127,12 @@ export function stopSidecar(): void {
 
 export type Method = 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE'
 
-export async function callSidecar<T>(method: Method, path: string, body?: unknown): Promise<T> {
+export async function callSidecar<T>(
+  method: Method,
+  path: string,
+  body?: unknown,
+  extraHeaders: Record<string, string> = {}
+): Promise<T> {
   let sidecar: Sidecar
   try {
     sidecar = await ensureSidecar()
@@ -136,7 +141,7 @@ export async function callSidecar<T>(method: Method, path: string, body?: unknow
   }
   const res = await fetch(`http://127.0.0.1:${sidecar.port}${path}`, {
     method,
-    headers: { 'Content-Type': 'application/json', 'X-Crema-Token': sidecar.token },
+    headers: { 'Content-Type': 'application/json', 'X-Crema-Token': sidecar.token, ...extraHeaders },
     body: body === undefined ? undefined : JSON.stringify(body)
   })
   const data = await res.json().catch(() => null)

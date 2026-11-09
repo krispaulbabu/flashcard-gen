@@ -14,7 +14,7 @@ import type { Card } from './components/Flashcard'
 import type { Difficulty } from './components/DifficultyBadge'
 import { SettingsModal } from './components/SettingsModal'
 import { StudyPanel } from './components/StudyPanel'
-import { DEFAULT_SETTINGS, type Settings } from './lib/settings'
+import { DEFAULT_SETTINGS, type ProviderConfig, type Settings } from './lib/settings'
 
 interface AppProject extends Project {
   documents: ProjectDocument[]
@@ -37,13 +37,14 @@ function toProject(p: StoredProject): AppProject {
 /** Saved settings may predate newer fields, so fill gaps from the defaults. */
 function mergeSettings(saved: Record<string, unknown>): Settings {
   const merged = { ...DEFAULT_SETTINGS, ...saved } as Settings
-  if (!Array.isArray(saved.providers)) merged.providers = DEFAULT_SETTINGS.providers
+  // Providers come from the defaults (OpenRouter only); keep a saved model for each one that still exists.
+  const savedProviders = Array.isArray(saved.providers) ? (saved.providers as Partial<ProviderConfig>[]) : []
+  merged.providers = DEFAULT_SETTINGS.providers.map((d) => {
+    const s = savedProviders.find((p) => p.id === d.id)
+    return { ...d, model: typeof s?.model === 'string' && s.model.trim() ? s.model : d.model }
+  })
+  merged.defaultProviderId = DEFAULT_SETTINGS.defaultProviderId
   return merged
-}
-
-/** API keys are never written to the database in plain text; the Keychain will hold them later. */
-function settingsForSaving(s: Settings): Settings {
-  return { ...s, providers: s.providers.map((p) => ({ ...p, apiKey: '' })) }
 }
 
 /** "lecture-04_mitochondria.pdf" → "lecture 04 mitochondria" */
@@ -84,7 +85,7 @@ function App(): React.JSX.Element {
   useEffect(() => {
     if (!settingsLoaded.current) return
     const timer = setTimeout(() => {
-      window.api.saveSettings(settingsForSaving(settings)).then((r) => {
+      window.api.saveSettings(settings).then((r) => {
         if (!r.ok) setActionError(`Couldn’t save settings. ${r.error}`)
       })
     }, 400)
@@ -200,7 +201,8 @@ function App(): React.JSX.Element {
     const perDocument = Math.min(200, Math.max(1, parseInt(settings.cardsPerDocument, 10) || 20))
     const result = await window.api.generateCards(projectId, {
       difficulty: settings.defaultDifficulty,
-      cards_per_document: perDocument
+      cards_per_document: perDocument,
+      model: settings.providers.find((p) => p.id === settings.defaultProviderId)?.model.trim() || undefined
     })
 
     // The user may have switched projects while this ran; update the one we started on.

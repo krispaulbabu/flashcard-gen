@@ -1,6 +1,7 @@
 import type { Difficulty } from '../components/DifficultyBadge'
 
-// Saved to the backend database (API keys excluded). Not applied to the UI yet.
+// Saved to the backend database. The OpenRouter key is not part of settings: the main process
+// keeps it encrypted (see src/main/apiKey.ts).
 
 export type ThemeSetting = 'light' | 'dark' | 'system'
 export type TextSize = 'sm' | 'md' | 'lg'
@@ -11,8 +12,6 @@ export interface ProviderConfig {
   id: string
   name: string
   kind: 'cloud' | 'local'
-  /** Cloud providers: API key. */
-  apiKey: string
   /** Local providers (Ollama): server URL. */
   baseUrl: string
   model: string
@@ -39,28 +38,18 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: 'light',
   font: 'Bookerly',
   textSize: 'md',
+  // Only OpenRouter for now; it reaches most models through one key.
   providers: [
     {
-      id: 'anthropic',
-      name: 'Anthropic',
+      id: 'openrouter',
+      name: 'OpenRouter',
       kind: 'cloud',
-      apiKey: '',
       baseUrl: '',
-      model: 'claude-sonnet-5-5',
-      modelPlaceholder: 'e.g. claude-sonnet-5-5'
-    },
-    { id: 'openai', name: 'OpenAI', kind: 'cloud', apiKey: '', baseUrl: '', model: '', modelPlaceholder: 'e.g. gpt-5' },
-    {
-      id: 'ollama',
-      name: 'Ollama (local)',
-      kind: 'local',
-      apiKey: '',
-      baseUrl: 'http://localhost:11434',
-      model: 'llama3.1:8b',
-      modelPlaceholder: 'e.g. llama3.1:8b'
+      model: 'anthropic/claude-sonnet-5.5',
+      modelPlaceholder: 'anthropic/claude-sonnet-5.5'
     }
   ],
-  defaultProviderId: 'anthropic',
+  defaultProviderId: 'openrouter',
   defaultDifficulty: 'medium',
   cardsPerDocument: '20',
   ankiDeckName: 'Crema',

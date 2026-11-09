@@ -18,15 +18,9 @@ class LLMError(Exception):
     """A request to the model failed; the message is shown to the user."""
 
 
-def model_name() -> str:
-    return os.environ.get("OPENROUTER_MODEL") or DEFAULT_MODEL
-
-
-def _api_key() -> str:
-    key = os.environ.get("OPENROUTER_API_KEY", "").strip()
-    if not key:
-        raise LLMError("No OpenRouter API key. Add OPENROUTER_API_KEY to the .env file in the project folder.")
-    return key
+def model_name(override: str | None = None) -> str:
+    """The model from Settings, or the default when the field is empty."""
+    return (override or "").strip() or DEFAULT_MODEL
 
 
 def _parse(content: str) -> list[LLMCard]:
@@ -46,6 +40,8 @@ async def generate_cards_for_chunk(
     mix: dict[Difficulty, int],
     part: int,
     total_parts: int,
+    model: str,
+    api_key: str,
 ) -> list[LLMCard]:
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
@@ -61,16 +57,17 @@ async def generate_cards_for_chunk(
         },
     ]
 
+    # OPENROUTER_BASE_URL: only for pointing tests at a local stand-in for OpenRouter.
     base_url = os.environ.get("OPENROUTER_BASE_URL") or DEFAULT_BASE_URL
     headers = {
-        "Authorization": f"Bearer {_api_key()}",
+        "Authorization": f"Bearer {api_key}",
         "X-Title": "Crema",
     }
 
     # One retry: if the reply doesn't validate, show the model the error and ask again.
     for attempt in range(2):
         body = {
-            "model": model_name(),
+            "model": model,
             "messages": messages,
             # No temperature/top_p: newer models (e.g. Claude Sonnet 5.5) don't accept them, and
             # with require_parameters below any unsupported parameter means no provider matches.
@@ -87,13 +84,13 @@ async def generate_cards_for_chunk(
             raise LLMError(f"Couldn't reach OpenRouter ({type(e).__name__}).") from e
 
         if res.status_code == 401:
-            raise LLMError("OpenRouter rejected the API key. Check OPENROUTER_API_KEY in .env.")
+            raise LLMError("OpenRouter rejected the API key. Check it in Settings → AI provider.")
         if res.status_code == 402:
             raise LLMError("OpenRouter says the account is out of credits.")
         if res.status_code == 404:
             raise LLMError(
-                f"No OpenRouter provider can run {model_name()} with structured output. "
-                "Pick a model that lists \"structured outputs\" on openrouter.ai and set OPENROUTER_MODEL in .env."
+                f"No OpenRouter provider can run {model} with structured output. "
+                "Pick a model that lists \"structured outputs\" on openrouter.ai (Settings → AI provider)."
             )
         if res.status_code >= 400:
             try:

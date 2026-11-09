@@ -69,6 +69,8 @@ class GenerateRequest(BaseModel):
     # "random": each card gets a random level, so one batch mixes all three.
     difficulty: Difficulty | Literal["random"] = "medium"
     cards_per_document: int = Field(default=20, ge=1, le=200)
+    # OpenRouter model id from Settings; empty means the default model.
+    model: str | None = Field(default=None, max_length=200)
 
 
 class Card(BaseModel):

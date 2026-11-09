@@ -21,3 +21,8 @@ export type GenerateResponse = {
 }
 
 export type Result<T> = { ok: true; data: T } | { ok: false; error: string }
+
+export type KeyStatus = { saved: boolean; last4?: string }
+export type KeyVerdict =
+  | { ok: true; status: KeyStatus; verified: boolean; note?: string }
+  | { ok: false; error: string }
