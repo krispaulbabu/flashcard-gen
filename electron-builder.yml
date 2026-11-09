@@ -1,0 +1,39 @@
+# Packages Crema for macOS and Windows. The Python backend is frozen first with
+# `uv run python build_backend.py` (in backend/) and shipped as Resources/backend.
+appId: com.krispaulbabu.crema
+productName: Crema
+copyright: Copyright © 2026 Kris Paul Babu
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**
+  - package.json
+  # React and the fonts are bundled into out/ by electron-vite; nothing in node_modules is needed.
+  - "!node_modules/**"
+extraResources:
+  - from: backend/dist/crema-backend
+    to: backend
+afterPack: build/afterPack.cjs
+
+mac:
+  category: public.app-category.education
+  target: [dmg, zip]
+  # No Apple Developer ID yet: afterPack signs ad hoc so it runs on Apple Silicon.
+  identity: null
+  artifactName: ${productName}-${version}-mac-${arch}.${ext}
+dmg:
+  artifactName: ${productName}-${version}-mac-${arch}.${ext}
+
+win:
+  target: [nsis]
+  artifactName: ${productName}-${version}-windows-${arch}-setup.${ext}
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+
+publish:
+  provider: github
+  owner: krispaulbabu
+  repo: flashcard-gen
+  releaseType: draft

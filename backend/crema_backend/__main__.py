@@ -7,6 +7,7 @@ import argparse
 import asyncio
 import hmac
 import os
+import sys
 import threading
 import time
 from contextlib import asynccontextmanager
@@ -174,6 +175,30 @@ def put_settings(body: dict) -> dict:
     return {"ok": True}
 
 
+def process_alive(pid: int) -> bool:
+    if sys.platform == "win32":
+        # Not os.kill(pid, 0): on Windows that *terminates* the process.
+        import ctypes
+
+        kernel32 = ctypes.windll.kernel32
+        handle = kernel32.OpenProcess(0x1000, False, pid)  # PROCESS_QUERY_LIMITED_INFORMATION
+        if not handle:
+            return False
+        try:
+            code = ctypes.c_ulong()
+            kernel32.GetExitCodeProcess(handle, ctypes.byref(code))
+            return code.value == 259  # STILL_ACTIVE
+        finally:
+            kernel32.CloseHandle(handle)
+    try:
+        os.kill(pid, 0)  # signal 0: only checks the process exists
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        pass  # exists, owned by someone else
+    return True
+
+
 def exit_with_parent() -> None:
     """Electron's quit handler doesn't run on a crash or force quit, so also watch for it to disappear."""
     pid = int(os.environ.get("CREMA_PARENT_PID") or 0)
@@ -183,12 +208,8 @@ def exit_with_parent() -> None:
     def watch() -> None:
         while True:
             time.sleep(2)
-            try:
-                os.kill(pid, 0)  # signal 0: only checks the process exists
-            except ProcessLookupError:
+            if not process_alive(pid):
                 os._exit(0)
-            except PermissionError:
-                pass  # exists, owned by someone else (shouldn't happen, but isn't "gone")
 
     threading.Thread(target=watch, daemon=True).start()
 

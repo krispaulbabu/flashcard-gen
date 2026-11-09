@@ -11,7 +11,9 @@
     "preview": "electron-vite preview",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json",
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json",
-    "typecheck": "npm run typecheck:node && npm run typecheck:web"
+    "typecheck": "npm run typecheck:node && npm run typecheck:web",
+    "build:backend": "cd backend && uv run python build_backend.py",
+    "dist": "npm run build && electron-builder --publish never"
   },
   "dependencies": {
     "@fontsource-variable/literata": "^5.3.0",
@@ -25,8 +27,12 @@
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.2.1",
     "electron": "^45.2.3",
+    "electron-builder": "^26.18.0",
     "electron-vite": "^6.0.0",
     "typescript": "^5.9.3",
     "vite": "^8.3.6"
+  },
+  "author": {
+    "name": "Kris Paul Babu"
   }
 }

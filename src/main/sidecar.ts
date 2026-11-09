@@ -30,11 +30,34 @@ function freePort(): Promise<number> {
   })
 }
 
-// Apps opened from Finder don't inherit the shell PATH, so look in uv's usual install spots.
+// Dev only. Apps opened from Finder don't inherit the shell PATH, so look in uv's usual install spots.
 function findUv(): string {
   if (process.env['CREMA_UV']) return process.env['CREMA_UV']
-  const candidates = [join(homedir(), '.local/bin/uv'), '/opt/homebrew/bin/uv', '/usr/local/bin/uv']
+  const candidates =
+    process.platform === 'win32'
+      ? [join(homedir(), '.local', 'bin', 'uv.exe'), join(homedir(), '.cargo', 'bin', 'uv.exe')]
+      : [join(homedir(), '.local/bin/uv'), '/opt/homebrew/bin/uv', '/usr/local/bin/uv']
   return candidates.find((p) => existsSync(p)) ?? 'uv'
+}
+
+/**
+ * How to start the backend. Packaged app: the frozen executable (PyInstaller) shipped in
+ * Resources/backend. Dev: `uv run` against the source in backend/, reloading on edits.
+ */
+function backendCommand(port: number): { cmd: string; args: string[]; cwd: string } {
+  // ~/Library/Application Support/Crema (or %APPDATA%\Crema): the database and copies of uploaded files.
+  const common = ['--port', String(port), '--data-dir', app.getPath('userData')]
+  if (app.isPackaged) {
+    const dir = join(process.resourcesPath, 'backend')
+    const exe = process.platform === 'win32' ? 'crema-backend.exe' : 'crema-backend'
+    return { cmd: join(dir, exe), args: common, cwd: dir }
+  }
+  const root = app.getAppPath()
+  return {
+    cmd: findUv(),
+    args: ['run', '--project', join(root, 'backend'), 'python', '-m', 'crema_backend', ...common, '--reload'],
+    cwd: root
+  }
 }
 
 async function waitForHealth(port: number, proc: ChildProcess): Promise<void> {
@@ -53,31 +76,18 @@ async function waitForHealth(port: number, proc: ChildProcess): Promise<void> {
 }
 
 async function start(): Promise<Sidecar> {
-  const root = app.getAppPath()
   const port = await freePort()
   const token = randomBytes(24).toString('hex')
 
   recentOutput = ''
+  const { cmd, args, cwd } = backendCommand(port)
   const proc = spawn(
-    findUv(),
-    [
-      'run',
-      '--project',
-      join(root, 'backend'),
-      'python',
-      '-m',
-      'crema_backend',
-      '--port',
-      String(port),
-      // ~/Library/Application Support/<app name>: the database and copies of uploaded files.
-      '--data-dir',
-      app.getPath('userData'),
-      // In dev, pick up backend edits without restarting the app.
-      ...(app.isPackaged ? [] : ['--reload'])
-    ],
+    cmd,
+    args,
     // Token goes via the environment, not argv, so it doesn't show up in `ps`.
     {
-      cwd: root,
+      cwd,
+      windowsHide: true, // no console window flashing up on Windows
       // CREMA_PARENT_PID: the backend exits when this process is gone, even after a crash or force quit.
       env: { ...process.env, CREMA_TOKEN: token, CREMA_PARENT_PID: String(process.pid) },
       stdio: ['ignore', 'pipe', 'pipe']

@@ -1,0 +1,71 @@
+# Builds Crema for Windows and macOS (Apple Silicon and Intel) and attaches the installers to a
+# draft GitHub Release. Runs when a tag like v0.1.0 is pushed; the tag must match package.json's
+# version. Publish the draft from the Releases page once all three builds have finished.
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest # Windows x64
+          - os: macos-latest # Apple Silicon
+          - os: macos-15-intel # Intel Mac
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.12'
+
+      - name: Check the tag matches package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: bash
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME doesn't match package.json version $version"
+            exit 1
+          fi
+
+      - name: Freeze the Python backend
+        working-directory: backend
+        run: |
+          uv sync --frozen
+          uv run python build_backend.py
+
+      - name: Install and build the app
+        run: |
+          npm ci
+          npm run build
+
+      - name: Package and upload to the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Manual runs build only; tag pushes upload to the release.
+        run: npx electron-builder --publish ${{ startsWith(github.ref, 'refs/tags/v') && 'always' || 'never' }}
+
+      - name: Keep the installers as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: crema-${{ matrix.os }}
+          path: |
+            release/*.dmg
+            release/*.zip
+            release/*.exe
+          if-no-files-found: error
