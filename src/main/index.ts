@@ -18,6 +18,9 @@ const ROUTES: [Method, RegExp][] = [
   ['PUT', /^\/settings$/]
 ]
 
+/** In-flight "Generate cards" requests by project id, so Cancel can abort them. */
+const generations = new Map<string, AbortController>()
+
 function isAllowed(method: Method, path: string): boolean {
   return ROUTES.some(([m, re]) => m === method && re.test(path))
 }
@@ -66,15 +69,27 @@ app.whenReady().then(() => {
     if (!isAllowed(method, path)) return { ok: false, error: `Not allowed: ${method} ${path}` }
     // Only card generation needs the OpenRouter key; it's added here so the renderer never holds it.
     const headers: Record<string, string> = {}
-    if (/\/cards\/generate$/.test(path)) {
+    const generating = path.match(/^\/projects\/([^/]+)\/cards\/generate$/)?.[1]
+    let controller: AbortController | undefined
+    if (generating) {
       const key = readKey()
       if (key) headers['X-OpenRouter-Key'] = key
+      controller = new AbortController()
+      generations.set(generating, controller)
     }
     try {
-      return { ok: true, data: await callSidecar(method, path, body, headers) }
+      return { ok: true, data: await callSidecar(method, path, body, headers, controller?.signal) }
     } catch (err) {
+      if (controller?.signal.aborted) return { ok: false, error: 'Cancelled.', cancelled: true }
       return { ok: false, error: (err as Error).message }
+    } finally {
+      if (generating && generations.get(generating) === controller) generations.delete(generating)
     }
+  })
+
+  // Aborting drops the connection; the backend sees that and stops (and saves nothing).
+  ipcMain.handle('cards:cancel', (_event, projectId: string) => {
+    generations.get(String(projectId))?.abort()
   })
 
   ipcMain.handle('key:status', () => keyStatus())

@@ -131,7 +131,8 @@ export async function callSidecar<T>(
   method: Method,
   path: string,
   body?: unknown,
-  extraHeaders: Record<string, string> = {}
+  extraHeaders: Record<string, string> = {},
+  signal?: AbortSignal
 ): Promise<T> {
   let sidecar: Sidecar
   try {
@@ -142,7 +143,8 @@ export async function callSidecar<T>(
   const res = await fetch(`http://127.0.0.1:${sidecar.port}${path}`, {
     method,
     headers: { 'Content-Type': 'application/json', 'X-Crema-Token': sidecar.token, ...extraHeaders },
-    body: body === undefined ? undefined : JSON.stringify(body)
+    body: body === undefined ? undefined : JSON.stringify(body),
+    signal
   })
   const data = await res.json().catch(() => null)
   if (!res.ok) {

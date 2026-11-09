@@ -4,6 +4,7 @@ Electron starts this with a random port and a per-launch token, and is the only 
 """
 
 import argparse
+import asyncio
 import hmac
 import os
 import threading
@@ -12,7 +13,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 import uvicorn
-from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
 
 from .generate import generate
 from .llm import LLMError
@@ -123,6 +124,7 @@ def delete_document(doc_id: str) -> dict:
 async def generate_cards(
     project_id: str,
     req: GenerateRequest,
+    request: Request,
     # Added by Electron's main process from the key saved in Settings (never stored here).
     x_openrouter_key: str = Header(default=""),
 ) -> GenerateResponse:
@@ -136,8 +138,16 @@ async def generate_cards(
     if not rows:
         raise HTTPException(status_code=400, detail="Add a document before generating cards.")
     docs = [DocumentRef(id=r["id"], name=r["name"], path=r["stored_path"]) for r in rows]
+    # Cancel = Electron drops the connection. FastAPI wouldn't stop on its own (and would still
+    # save the cards), so run the work as a task and cancel it when the caller goes away.
+    task = asyncio.create_task(generate(docs, req, api_key))
+    while not task.done():
+        await asyncio.wait({task}, timeout=0.5)
+        if not task.done() and await request.is_disconnected():
+            task.cancel()
+            raise HTTPException(status_code=499, detail="Cancelled.")
     try:
-        result = await generate(docs, req, api_key)
+        result = task.result()
     except LLMError as e:
         raise HTTPException(status_code=502, detail=str(e)) from e
     store().add_cards(project_id, result.cards)

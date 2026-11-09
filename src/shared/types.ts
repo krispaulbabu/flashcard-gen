@@ -20,7 +20,7 @@ export type GenerateResponse = {
   model: string
 }
 
-export type Result<T> = { ok: true; data: T } | { ok: false; error: string }
+export type Result<T> = { ok: true; data: T } | { ok: false; error: string; cancelled?: boolean }
 
 export type KeyStatus = { saved: boolean; last4?: string }
 export type KeyVerdict =

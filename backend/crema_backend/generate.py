@@ -17,6 +17,9 @@ from .models import Card, Difficulty, DocumentError, DocumentRef, GenerateReques
 # small enough that long books are split and every part gets its share of cards.
 MAX_CHARS_PER_CHUNK = 100_000
 MAX_PARALLEL_REQUESTS = 4
+# Seconds to wait for OpenRouter's reply to one request. Free models can queue for minutes;
+# better to fail with a clear message than leave the user waiting.
+REPLY_TIMEOUT = 90.0
 DIFFICULTIES: list[Difficulty] = ["easy", "medium", "hard"]
 
 
@@ -31,7 +34,7 @@ async def generate(documents: list[DocumentRef], req: GenerateRequest, api_key: 
     limit = asyncio.Semaphore(MAX_PARALLEL_REQUESTS)
     model = model_name(req.model)
 
-    async with httpx.AsyncClient(timeout=httpx.Timeout(180.0, connect=10.0)) as client:
+    async with httpx.AsyncClient(timeout=httpx.Timeout(REPLY_TIMEOUT, connect=10.0)) as client:
         for doc in documents:
             try:
                 pages = await asyncio.to_thread(extract_pages, doc.path)

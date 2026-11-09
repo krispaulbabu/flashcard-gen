@@ -32,6 +32,8 @@ const api = {
   generateCards: (projectId: string, req: { difficulty: DifficultySetting; cards_per_document: number; model?: string }) =>
     request<GenerateResponse>('POST', `/projects/${projectId}/cards/generate`, req),
 
+  cancelGenerate: (projectId: string): Promise<void> => ipcRenderer.invoke('cards:cancel', projectId),
+
   setCardDifficulty: (cardId: string, difficulty: Difficulty) =>
     request<{ ok: true }>('PATCH', `/cards/${cardId}`, { difficulty }),
 

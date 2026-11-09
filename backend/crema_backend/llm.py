@@ -80,6 +80,12 @@ async def generate_cards_for_chunk(
         }
         try:
             res = await client.post(f"{base_url}/chat/completions", json=body, headers=headers)
+        except httpx.TimeoutException as e:
+            # No retry: a model that's this slow will usually be slow again.
+            raise LLMError(
+                f"{model} took too long to reply (over {int(client.timeout.read or 0)} s). "
+                "It may be busy; try again, or pick another model in Settings → AI provider."
+            ) from e
         except httpx.HTTPError as e:
             raise LLMError(f"Couldn't reach OpenRouter ({type(e).__name__}).") from e
 

@@ -214,7 +214,8 @@ function App(): React.JSX.Element {
         generateErrors: errors.map((e) => `${e.name}: ${e.message}`)
       }))
     } else {
-      updateProject(projectId, () => ({ generating: false, generateErrors: [result.error] }))
+      // Cancelled by the user: nothing to report.
+      updateProject(projectId, () => ({ generating: false, generateErrors: result.cancelled ? [] : [result.error] }))
     }
   }
 
@@ -271,6 +272,9 @@ function App(): React.JSX.Element {
                     disabled={active.cards.length === 0}
                     onClick={() => setStudyOpen(true)}
                   />
+                  {active.generating && (
+                    <Button onClick={() => window.api.cancelGenerate(active.id)}>Cancel</Button>
+                  )}
                   <Button
                     variant="primary"
                     icon="sparkle"
