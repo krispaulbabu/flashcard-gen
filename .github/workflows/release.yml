@@ -1,4 +1,4 @@
-# Builds Crema for Windows and macOS (Apple Silicon and Intel) and attaches the installers to a
+# Builds Crema for macOS (Apple Silicon and Intel) and attaches the installers to a
 # draft GitHub Release. Runs when a tag like v0.1.0 is pushed; the tag must match package.json's
 # version. Publish the draft from the Releases page once all three builds have finished.
 name: Release
@@ -17,7 +17,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: windows-latest # Windows x64
+          # Windows is off for now; uncomment to build it again.
+          # - os: windows-latest # Windows x64
           - os: macos-latest # Apple Silicon
           - os: macos-15-intel # Intel Mac
     runs-on: ${{ matrix.os }}
