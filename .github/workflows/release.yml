@@ -1,6 +1,6 @@
-# Builds Crema for macOS (Apple Silicon and Intel) and attaches the installers to a
-# draft GitHub Release. Runs when a tag like v0.1.0 is pushed; the tag must match package.json's
-# version. Publish the draft from the Releases page once all three builds have finished.
+# Builds Crema for macOS (Apple Silicon and Intel). On a tag like v0.1.0 (which must match
+# package.json's version), a final job puts every installer on one draft GitHub Release; publish
+# it from the Releases page. Manual runs only build, and keep the installers as workflow artifacts.
 name: Release
 
 on:
@@ -55,11 +55,8 @@ jobs:
           npm ci
           npm run build
 
-      - name: Package and upload to the draft release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        # Manual runs build only; tag pushes upload to the release.
-        run: npx electron-builder --publish ${{ startsWith(github.ref, 'refs/tags/v') && 'always' || 'never' }}
+      - name: Package the installers
+        run: npx electron-builder --publish never
 
       - name: Keep the installers as a workflow artifact
         uses: actions/upload-artifact@v4
@@ -70,3 +67,22 @@ jobs:
             release/*.zip
             release/*.exe
           if-no-files-found: error
+
+  # One job creates the release, so parallel builds can't each make their own draft.
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: installers
+          merge-multiple: true
+
+      - name: Create the draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ls -la installers
+          gh release create "$GITHUB_REF_NAME" installers/* \
+            --repo "$GITHUB_REPOSITORY" --draft --title "Crema ${GITHUB_REF_NAME#v}" --generate-notes
