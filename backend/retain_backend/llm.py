@@ -61,7 +61,7 @@ async def generate_cards_for_chunk(
     base_url = os.environ.get("OPENROUTER_BASE_URL") or DEFAULT_BASE_URL
     headers = {
         "Authorization": f"Bearer {api_key}",
-        "X-Title": "Crema",
+        "X-Title": "Retain",
     }
 
     # One retry: if the reply doesn't validate, show the model the error and ask again.

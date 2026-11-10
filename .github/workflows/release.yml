@@ -1,4 +1,4 @@
-# Builds Crema for macOS (Apple Silicon and Intel). On a tag like v0.1.0 (which must match
+# Builds Retain for macOS (Apple Silicon and Intel). On a tag like v0.1.0 (which must match
 # package.json's version), a final job puts every installer on one draft GitHub Release; publish
 # it from the Releases page. Manual runs only build, and keep the installers as workflow artifacts.
 name: Release
@@ -61,7 +61,7 @@ jobs:
       - name: Keep the installers as a workflow artifact
         uses: actions/upload-artifact@v4
         with:
-          name: crema-${{ matrix.os }}
+          name: retain-${{ matrix.os }}
           path: |
             release/*.dmg
             release/*.zip
@@ -85,4 +85,4 @@ jobs:
         run: |
           ls -la installers
           gh release create "$GITHUB_REF_NAME" installers/* \
-            --repo "$GITHUB_REPOSITORY" --draft --title "Crema ${GITHUB_REF_NAME#v}" --generate-notes
+            --repo "$GITHUB_REPOSITORY" --draft --title "Retain ${GITHUB_REF_NAME#v}" --generate-notes

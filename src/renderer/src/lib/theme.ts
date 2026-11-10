@@ -6,7 +6,7 @@ import type { ThemeSetting } from './settings'
  * before settings arrive from the backend.
  */
 
-const STORAGE_KEY = 'crema-theme'
+const STORAGE_KEY = 'retain-theme'
 
 /** Call once before the first render. */
 export function applyRememberedTheme(): void {

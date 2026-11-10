@@ -1,12 +1,12 @@
-# DESIGN.md — Crema design system
+# DESIGN.md — Retain design system
 
-All UI in this app follows the **Crema** design system. The full system — live component previews, usage notes for every token, and the component bundle — is published here:
+All UI in this app follows the **Retain** design system. The full system — live component previews, usage notes for every token, and the component bundle — is published here:
 
 **https://claude.ai/artifact/A9ejtyhFXHTVJK2Y535STf**
 
 This file is the in-repo summary. When the two disagree, update both; the artifact holds the source `tokens.json`, `bundle.css`, `bundle.js` and `index.d.ts`.
 
-> "Crema" is a working name for the app. Rename freely; keep the tokens.
+> The app is called Retain (it was Crema before). The coffee names stay on the tokens and themes: `espresso`, `crema`, Latte, Roast.
 
 ---
 

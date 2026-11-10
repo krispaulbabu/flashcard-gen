@@ -1,4 +1,4 @@
-// Data shapes shared by the preload bridge and the renderer (mirror backend/crema_backend/models.py).
+// Data shapes shared by the preload bridge and the renderer (mirror backend/retain_backend/models.py).
 
 export type Difficulty = 'easy' | 'medium' | 'hard'
 export type DifficultySetting = Difficulty | 'random'

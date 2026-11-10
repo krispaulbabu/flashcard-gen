@@ -1,7 +1,7 @@
-# Packages Crema for macOS and Windows. The Python backend is frozen first with
+# Packages Retain for macOS and Windows. The Python backend is frozen first with
 # `uv run python build_backend.py` (in backend/) and shipped as Resources/backend.
-appId: com.krispaulbabu.crema
-productName: Crema
+appId: com.krispaulbabu.retain
+productName: Retain
 copyright: Copyright © 2026 Kris Paul Babu
 directories:
   output: release
@@ -12,7 +12,7 @@ files:
   # React and the fonts are bundled into out/ by electron-vite; nothing in node_modules is needed.
   - "!node_modules/**"
 extraResources:
-  - from: backend/dist/crema-backend
+  - from: backend/dist/retain-backend
     to: backend
 afterPack: build/afterPack.cjs
 

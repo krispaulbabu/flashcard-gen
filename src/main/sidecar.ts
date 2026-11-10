@@ -1,5 +1,5 @@
 /**
- * Starts the Python backend (backend/crema_backend) and talks to it over localhost.
+ * Starts the Python backend (backend/retain_backend) and talks to it over localhost.
  *
  * Each launch picks a free port and a random token; the backend rejects requests without
  * the token, so other programs on the machine can't use it.
@@ -32,7 +32,7 @@ function freePort(): Promise<number> {
 
 // Dev only. Apps opened from Finder don't inherit the shell PATH, so look in uv's usual install spots.
 function findUv(): string {
-  if (process.env['CREMA_UV']) return process.env['CREMA_UV']
+  if (process.env['RETAIN_UV']) return process.env['RETAIN_UV']
   const candidates =
     process.platform === 'win32'
       ? [join(homedir(), '.local', 'bin', 'uv.exe'), join(homedir(), '.cargo', 'bin', 'uv.exe')]
@@ -45,17 +45,17 @@ function findUv(): string {
  * Resources/backend. Dev: `uv run` against the source in backend/, reloading on edits.
  */
 function backendCommand(port: number): { cmd: string; args: string[]; cwd: string } {
-  // ~/Library/Application Support/Crema (or %APPDATA%\Crema): the database and copies of uploaded files.
+  // ~/Library/Application Support/Retain (or %APPDATA%\Retain): the database and copies of uploaded files.
   const common = ['--port', String(port), '--data-dir', app.getPath('userData')]
   if (app.isPackaged) {
     const dir = join(process.resourcesPath, 'backend')
-    const exe = process.platform === 'win32' ? 'crema-backend.exe' : 'crema-backend'
+    const exe = process.platform === 'win32' ? 'retain-backend.exe' : 'retain-backend'
     return { cmd: join(dir, exe), args: common, cwd: dir }
   }
   const root = app.getAppPath()
   return {
     cmd: findUv(),
-    args: ['run', '--project', join(root, 'backend'), 'python', '-m', 'crema_backend', ...common, '--reload'],
+    args: ['run', '--project', join(root, 'backend'), 'python', '-m', 'retain_backend', ...common, '--reload'],
     cwd: root
   }
 }
@@ -88,8 +88,8 @@ async function start(): Promise<Sidecar> {
     {
       cwd,
       windowsHide: true, // no console window flashing up on Windows
-      // CREMA_PARENT_PID: the backend exits when this process is gone, even after a crash or force quit.
-      env: { ...process.env, CREMA_TOKEN: token, CREMA_PARENT_PID: String(process.pid) },
+      // RETAIN_PARENT_PID: the backend exits when this process is gone, even after a crash or force quit.
+      env: { ...process.env, RETAIN_TOKEN: token, RETAIN_PARENT_PID: String(process.pid) },
       stdio: ['ignore', 'pipe', 'pipe']
     }
   )
@@ -148,11 +148,11 @@ export async function callSidecar<T>(
   try {
     sidecar = await ensureSidecar()
   } catch (err) {
-    throw new Error(`Couldn't start Crema's backend. ${(err as Error).message}`)
+    throw new Error(`Couldn't start Retain's backend. ${(err as Error).message}`)
   }
   const res = await fetch(`http://127.0.0.1:${sidecar.port}${path}`, {
     method,
-    headers: { 'Content-Type': 'application/json', 'X-Crema-Token': sidecar.token, ...extraHeaders },
+    headers: { 'Content-Type': 'application/json', 'X-Retain-Token': sidecar.token, ...extraHeaders },
     body: body === undefined ? undefined : JSON.stringify(body),
     signal
   })

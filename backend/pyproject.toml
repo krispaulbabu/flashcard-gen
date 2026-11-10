@@ -1,7 +1,7 @@
 [project]
-name = "crema-backend"
+name = "retain-backend"
 version = "0.1.0"
-description = "Local sidecar for Crema: reads documents and generates flashcards via OpenRouter."
+description = "Local sidecar for Retain: reads documents and generates flashcards via OpenRouter."
 requires-python = ">=3.12"
 dependencies = [
   "fastapi>=0.115",
@@ -22,4 +22,4 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["crema_backend"]
+packages = ["retain_backend"]

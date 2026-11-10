@@ -2,6 +2,7 @@ import { join } from 'node:path'
 import { app, BrowserWindow, ipcMain, nativeTheme, shell } from 'electron'
 import { callSidecar, startSidecar, stopSidecar, type Method } from './sidecar'
 import { clearKey, keyStatus, readKey, saveKey } from './apiKey'
+import { moveDataFromCrema } from './migrate'
 
 // The renderer may only reach these backend routes.
 const ID = '[0-9a-f-]{36}'
@@ -32,7 +33,7 @@ function createWindow(): void {
     minWidth: 900,
     minHeight: 600,
     show: false,
-    title: 'Crema',
+    title: 'Retain',
     // DESIGN.md: hidden inset title bar; the sidebar's top 44px is the drag strip.
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
     backgroundColor: '#faf6f0', // `paper` — avoids a white flash before the renderer paints
@@ -60,6 +61,12 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  // Must run before the backend opens the database. Only for the normal data folder, so a run with
+  // --user-data-dir (tests) never pulls in the real one.
+  const appData = app.getPath('appData')
+  if (app.getPath('userData') === join(appData, 'Retain')) {
+    moveDataFromCrema(join(appData, 'Crema'), join(appData, 'Retain'))
+  }
   // Start the backend early so the first "Generate cards" doesn't wait for Python to boot.
   startSidecar()
 

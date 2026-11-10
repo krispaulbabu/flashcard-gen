@@ -46,6 +46,8 @@ function mergeSettings(saved: Record<string, unknown>): Settings {
   })
   merged.defaultProviderId = DEFAULT_SETTINGS.defaultProviderId
   merged.theme = saved.theme === undefined ? DEFAULT_SETTINGS.theme : normalizeTheme(saved.theme)
+  // The old default deck name follows the app's rename; a deck name the user chose is kept.
+  if (merged.ankiDeckName === 'Crema') merged.ankiDeckName = DEFAULT_SETTINGS.ankiDeckName
   return merged
 }
 
@@ -71,7 +73,7 @@ function App(): React.JSX.Element {
 
   useEffect(() => {
     if (!window.api) {
-      setLoad({ kind: 'failed', message: 'Open Crema in the app. A browser tab can’t reach your projects.' })
+      setLoad({ kind: 'failed', message: 'Open Retain in the app. A browser tab can’t reach your projects.' })
       return
     }
     Promise.all([window.api.listProjects(), window.api.getSettings()]).then(([list, saved]) => {

@@ -1,4 +1,4 @@
-"""Entry point: `python -m crema_backend --port 8765 --data-dir <folder> [--reload]` (token in CREMA_TOKEN).
+"""Entry point: `python -m retain_backend --port 8765 --data-dir <folder> [--reload]` (token in RETAIN_TOKEN).
 
 Electron starts this with a random port and a per-launch token, and is the only caller.
 """
@@ -40,7 +40,7 @@ def store() -> Store:
     # worker process that never sees main()'s arguments.
     global _store
     if _store is None:
-        _store = Store(Path(os.environ["CREMA_DATA_DIR"]))
+        _store = Store(Path(os.environ["RETAIN_DATA_DIR"]))
     return _store
 
 
@@ -51,13 +51,13 @@ async def lifespan(_app: FastAPI):
     yield
 
 
-app = FastAPI(title="Crema backend", docs_url=None, redoc_url=None, lifespan=lifespan)
+app = FastAPI(title="Retain backend", docs_url=None, redoc_url=None, lifespan=lifespan)
 
 
-def require_token(x_crema_token: str = Header(default="")) -> None:
+def require_token(x_retain_token: str = Header(default="")) -> None:
     # Only the Electron app that started us knows the token; other local programs can't call in.
-    expected = os.environ.get("CREMA_TOKEN", "")
-    if not expected or not hmac.compare_digest(x_crema_token, expected):
+    expected = os.environ.get("RETAIN_TOKEN", "")
+    if not expected or not hmac.compare_digest(x_retain_token, expected):
         raise HTTPException(status_code=401, detail="Bad token")
 
 
@@ -201,7 +201,7 @@ def process_alive(pid: int) -> bool:
 
 def exit_with_parent() -> None:
     """Electron's quit handler doesn't run on a crash or force quit, so also watch for it to disappear."""
-    pid = int(os.environ.get("CREMA_PARENT_PID") or 0)
+    pid = int(os.environ.get("RETAIN_PARENT_PID") or 0)
     if not pid:
         return
 
@@ -221,12 +221,12 @@ def main() -> None:
     # Dev only: restart when backend code changes, so edits apply without restarting the app.
     parser.add_argument("--reload", action="store_true")
     args = parser.parse_args()
-    os.environ["CREMA_DATA_DIR"] = str(args.data_dir.resolve())
+    os.environ["RETAIN_DATA_DIR"] = str(args.data_dir.resolve())
 
     if args.reload:
         exit_with_parent()  # the reloader process; each worker also watches, via lifespan
         uvicorn.run(
-            "crema_backend.__main__:app",
+            "retain_backend.__main__:app",
             host="127.0.0.1",
             port=args.port,
             log_level="info",

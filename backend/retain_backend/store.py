@@ -1,7 +1,7 @@
 """SQLite storage for projects, documents, cards and settings.
 
-Layout of the data folder (Electron passes ~/Library/Application Support/Crema):
-    crema.db              the database
+Layout of the data folder (Electron passes ~/Library/Application Support/Retain):
+    retain.db              the database
     documents/<id>.<ext>  a copy of every uploaded file, so moving the original doesn't break a project
 """
 
@@ -61,14 +61,22 @@ class Store:
         self.data_dir = data_dir
         self.files_dir = data_dir / "documents"
         self.files_dir.mkdir(parents=True, exist_ok=True)
-        self.db_path = data_dir / "crema.db"
+        self.db_path = data_dir / "retain.db"
         with self._db() as db:
             version = db.execute("PRAGMA user_version").fetchone()[0]
             if version == 0:
                 db.executescript(SCHEMA)
                 db.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
             elif version > SCHEMA_VERSION:
-                raise RuntimeError("This database was made by a newer version of Crema.")
+                raise RuntimeError("This database was made by a newer version of Retain.")
+            self._repoint_documents(db)
+
+    def _repoint_documents(self, db: sqlite3.Connection) -> None:
+        """Stored paths are absolute. If the data folder moved (e.g. Crema → Retain), point them at this one."""
+        for doc_id, stored in db.execute("SELECT id, stored_path FROM documents").fetchall():
+            here = self.files_dir / Path(stored).name
+            if Path(stored) != here:
+                db.execute("UPDATE documents SET stored_path = ? WHERE id = ?", (str(here), doc_id))
 
     @contextmanager
     def _db(self) -> Iterator[sqlite3.Connection]:

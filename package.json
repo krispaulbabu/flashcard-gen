@@ -1,6 +1,6 @@
 {
-  "name": "crema",
-  "productName": "Crema",
+  "name": "retain",
+  "productName": "Retain",
   "version": "0.1.0",
   "description": "Turn documents into AI summaries and flashcards.",
   "private": true,

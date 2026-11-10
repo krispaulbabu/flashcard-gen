@@ -148,7 +148,7 @@ function ProvidersPane({ settings, onChange }: { settings: Settings; onChange: (
   return (
     <>
       <p className="settings-intro">
-        Crema sends your documents to OpenRouter, which passes them to the model you choose, to write cards.
+        Retain sends your documents to OpenRouter, which passes them to the model you choose, to write cards.
         Your key is stored encrypted on this Mac.
       </p>
       <section className="provider" aria-label={p.name}>
@@ -208,7 +208,7 @@ function ExportPane({ settings, set }: { settings: Settings; set: Setter }): Rea
       <div className="settings-grid">
         <TextField
           label="Deck name"
-          hint="Use :: for sub-decks, e.g. Crema::Biology."
+          hint="Use :: for sub-decks, e.g. Retain::Biology."
           value={settings.ankiDeckName}
           onChange={(e) => set('ankiDeckName', e.target.value)}
         />

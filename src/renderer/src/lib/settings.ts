@@ -52,7 +52,7 @@ export const DEFAULT_SETTINGS: Settings = {
   defaultProviderId: 'openrouter',
   defaultDifficulty: 'medium',
   cardsPerDocument: '20',
-  ankiDeckName: 'Crema',
+  ankiDeckName: 'Retain',
   ankiNoteType: 'Basic',
   ankiTagDifficulty: 'on'
 }
